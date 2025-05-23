@@ -1,0 +1,2 @@
+强制读主
+curl -X POST -H "Content-Type: application/json" -d '{"vectors": [0.9], "k": 5, "indexType": "FLAT", "filter":{"fieldName":"int_field","value":43, "op":"="}}' http://localhost:80/search?forceMaster=true

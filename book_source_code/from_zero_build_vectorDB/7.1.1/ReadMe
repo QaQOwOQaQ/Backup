@@ -1,0 +1,61 @@
+```python
+import torch
+import torchvision.transforms as transforms
+from torchvision.models import resnet50
+from PIL import Image
+```
+这些是导入语句，它们导入了所需的库和模块：
+- `torch`: PyTorch 库，用于深度学习和张量计算。
+- `torchvision.transforms`: 用于对图像进行预处理的转换函数。
+- `torchvision.models.resnet50`: 预训练的 ResNet-50 模型，用于特征提取。
+- `Image` from `PIL`: 用于读取和处理图像文件。
+
+```python
+def extract_features(image_path):
+```
+定义了一个名为 `extract_features` 的函数，它接受一个参数 `image_path`，这是要处理的图像文件的路径。
+
+```python
+    model = resnet50(pretrained=True)
+    model.eval()
+```
+这两行代码加载了预训练的 ResNet-50 模型，并将其设置为评估模式。这意味着该模型用于推理或特征提取，而不是训练。
+
+```python
+    preprocess = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+```
+这里定义了一个预处理管道，包括：
+- `Resize(256)`: 将图像大小调整为 256x256 像素。
+- `CenterCrop(224)`: 从中心裁剪出 224x224 像素的区域。
+- `ToTensor()`: 将 PIL 图像转换为 PyTorch 张量。
+- `Normalize(...)`: 标准化图像，使用在 ImageNet 数据集上预训练的模型时的标准均值和标准差。
+
+```python
+    img = Image.open(image_path)
+    img_t = preprocess(img)
+    batch_t = torch.unsqueeze(img_t, 0)
+```
+这几行代码读取图像文件，应用预处理转换，并添加一个维度来创建一个批次维度。这是因为模型预期输入是一个批次的数据，即使我们只处理一张图像。
+
+```python
+    with torch.no_grad():
+        out = model(batch_t)
+```
+在 `torch.no_grad()` 上下文管理器中，我们通过模型传递处理后的图像。这个上下文管理器禁用了梯度计算，这对于推理和特征提取是有用的，因为它减少了内存消耗和计算需求。
+
+```python
+    return out.flatten().numpy()
+```
+这一行将模型输出的特征向量转换为一维 numpy 数组。`flatten()` 方法将多维张量展平为一维，`numpy()` 方法将 PyTorch 张量转换为 numpy 数组。
+
+这个函数返回的一维数组就是图像的特征表示，可以用于后续的图像搜索或其他类似任务。
+
+
+python test_vector_db.py 
+2024-01-06 16:18:32,998 - INFO - Upsert Result: {'retCode': 0}
+2024-01-06 16:18:33,005 - INFO - Search Result: {'vectors': [4.0], 'distances': [0.0], 'retCode': 0}
